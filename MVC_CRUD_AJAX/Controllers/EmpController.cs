@@ -20,7 +20,12 @@ namespace MVC_CRUD_AJAX.Controllers
         public JsonResult Create(tblemployee emp)
         {
             db.tblemployees.Add(emp);
-            db.SaveChanges();
+            int  a=  db.SaveChanges();
+            if (a == 1)
+            {
+                TempData["messege"] = "Data Has Been Inserted";
+                ModelState.Clear();               
+            }
             return Json(emp);
         }
 
@@ -28,7 +33,11 @@ namespace MVC_CRUD_AJAX.Controllers
         {
 
             db.Entry(emp).State = System.Data.Entity.EntityState.Modified;
-            db.SaveChanges();
+            int a= db.SaveChanges();
+            if (a == 1)
+            {
+                TempData["messegeUpdate"] = "Data Has Been Updated";                        
+            }
             return new EmptyResult();
         }
 
@@ -36,7 +45,11 @@ namespace MVC_CRUD_AJAX.Controllers
         {
             var data = db.tblemployees.Find(id);
             db.tblemployees.Remove(data);
-            db.SaveChanges();
+            int a =  db.SaveChanges();
+            if (a == 1)
+            {
+                TempData["messegeDelete"] = "Data Has Been Deleted";
+            }
             return new EmptyResult();
         }
     }
