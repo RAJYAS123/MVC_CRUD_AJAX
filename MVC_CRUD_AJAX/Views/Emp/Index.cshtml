@@ -1,0 +1,171 @@
+﻿@model IEnumerable<MVC_CRUD_AJAX.Models.tblemployee>
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<body>
+
+    <center>
+        <h2>Index</h2>
+        <table border="1" class="table table-bordered alert-danger ">
+            <tr>
+                <th>Name:<input type="text" id="txtname" /></th>
+                <th>Age:<input type="text" id="txtage" /></th>
+                <th>Address:<input type="text" id="txtaddress" /></th>
+                <th><input type="submit" value="Save" id="btnsave" /></th>
+            </tr>
+        </table>
+        <table class="table bg-success" id="tblshow">
+            <tr class="bg-info">
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Address</th>
+            </tr>
+            @foreach (var a in Model)
+            {
+                <tr>
+                    <td class="id"><span>@a.id</span></td>
+                    <td class="name">
+                        <span> @a.name </span>
+                        <input type="text" value="@a.name" style="display:none;" />
+                    </td>
+                    <td class="age">
+                        <span> @a.age </span>
+                        <input type="text" value="@a.age" style="display:none;" />
+                    </td>
+                    <td class="address">
+                        <span>  @a.address </span>
+                        <input type="text" value="@a.address" style="display:none;" />
+                    </td>
+                    <td><a href="javascript:;" class="Edit btn btn-primary">Edit</a></td>
+                    <td><a href="javascript:;" class="Delete btn btn-danger">Delete</a></td>
+                    <td><a href="javascript:;" class="Update btn btn-success" style="display:none;">Update</a></td>
+                    <td><a href="javascript:;" class="Cancel btn btn-info" style="display:none;">Cancel</a></td>
+                </tr>
+            }
+        </table>
+    </center>
+</body>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.min.js"></script>
+<script type="text/javascript">
+
+/*  on click save button*/
+$("body").on("click", "#btnsave", function () {
+                if ($("#txtname").val() == "" || $("#txtage").val() == "" || $("#txtaddress").val() == "") {
+                    alert("Please Insert Data In All Fields Are Required");
+                }
+                else {
+                    var Txtname = $("#txtname");
+                    var Txtage = $("#txtage");
+                    var Txtaddress = $("#txtaddress");
+                    $.ajax({
+                        url: '/Emp/Create',
+                        type: 'post',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        data: '{name:"' + Txtname.val() + '",age:"' + Txtage.val() + '",address:"' + Txtaddress.val() + '"}',
+                        success: function () {
+                           /* var row = $("#tblshow tr:last-child");*/
+                            location.reload();//it fully reload the current page
+                            Txtname.val() = "";
+                            Txtage.val() = "";
+                            Txtaddress.val() = "";
+                        },
+                        error: function () {
+                            alert("wrong");
+                        }
+                    });
+                }
+            });
+
+            /* on click edit butto*/
+    $("body").on("click", "#tblshow .Edit", function () {
+        debugger;
+                var row = $(this).closest("tr");
+                $("td", row).each(function () {
+                    if ($(this).find("input").length > 0) {
+                        $(this).find("span").hide();
+                        $(this).find("input").show();
+                    }
+                });
+                row.find(".Edit").hide();
+                row.find(".Delete").hide();
+                row.find(".Update").show();
+                row.find(".Cancel").show();
+    });
+
+            /* on click Cancel Button*/
+            $("body").on("click", "#tblshow .Cancel", function () {
+                var row = $(this).closest("tr");
+                $("td", row).each(function () {
+                    if ($(this).find("input").length > 0) {
+                        $(this).find("span").show();
+                        $(this).find("input").hide();
+                    }
+                });
+                row.find(".Edit").show();
+                row.find(".Delete").show();
+                row.find(".Update").hide();
+                row.find(".Cancel").hide();
+            });
+
+
+            /*  on click update button*/
+
+            $("body").on("click", "#tblshow .Update", function () {
+                var row = $(this).closest("tr");
+                $("td", row).each(function () {
+                    if ($(this).find("input").length > 0) {
+                        var span = $(this).find("span");
+                        var input = $(this).find("input");
+                        span.html(input.val());
+                        span.show();
+                        input.hide();
+                    }
+                });
+                row.find(".Edit").show();
+                row.find(".Delete").show();
+                row.find(".Update").hide();
+                row.find(".Cancel").hide();
+               // $(this).hide();
+                var emp = {};
+                emp.id = row.find(".id").find("span").html();
+                emp.name = row.find(".name").find("span").html();
+                emp.age = row.find(".age").find("span").html();
+                emp.address = row.find(".address").find("span").html();
+                $.ajax({
+                    url: '/Emp/Update',
+                    type: 'post',
+                    contentType: 'application/json',
+                    data: '{emp:' + JSON.stringify(emp) + '}',
+                    dataType: 'json'
+                });
+            });
+
+            /* on click delete*/
+
+            $("body").on("click","#tblshow .Delete", function () {
+                if (confirm("You Want To Delete This Recored....?")) {
+                    debugger;
+                    var delrow = $(this).closest("tr");//take the nearest tr of the delete button
+                    var eid = delrow.find("span").html();//first span near the tr
+                    $.ajax({
+                        url: '/Emp/Delete',
+                        type: 'post',
+                        contentType: 'application/json',
+                        data: '{id:' + eid + '}',
+                        dataType: 'json',
+                        success: delrow.remove()//delete the whole tr(tr have column id,name,age,address)only from the Ui not from the database(Delete action method delete the record from the database)
+                    });
+                }
+            });
+
+</script>
+
+
